@@ -1,21 +1,21 @@
-  local TARGET_SOUND_ID = "96182964301191"
-  local Enabled = true
+local TARGET_SOUND_ID = "96182964301191"
+local Enabled = true
 
-  local UIS = game:GetService("UserInputService")
+local UIS = game:GetService("UserInputService")
 
- -- ================= ROOT =================
- local ScreenGui = Instance.new("ScreenGui")
- ScreenGui.Name = "BetterSoundUI"
- ScreenGui.ResetOnSpawn = false
- pcall(function()
+-- ================= ROOT =================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "BetterSoundUI"
+ScreenGui.ResetOnSpawn = false
+pcall(function()
     ScreenGui.Parent = game:GetService("CoreGui")
- end)
+end)
 
- -- ================= DRAG SYSTEM =================
- local dragging = false
- local dragInput, dragStart, startPos
+-- ================= DRAG SYSTEM =================
+local dragging = false
+local dragInput, dragStart, startPos
 
- local function makeDraggable(frame)
+local function makeDraggable(frame)
     frame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
@@ -198,69 +198,45 @@ toggle.MouseButton1Click:Connect(function()
     toggle.Text = Enabled and "Script: ON" or "Script: OFF"
 end)
 
--- ================= SNAKE (IMPROVED WAVE) =================
-local snake = {}
-
-for i = 1, 18 do
-    local p = Instance.new("Frame")
-    p.Size = UDim2.fromOffset(8,8)
-    p.Position = UDim2.fromOffset(20 + i*10, 120)
-    p.BackgroundColor3 = Color3.fromRGB(0,255,0)
-    p.BorderSizePixel = 0
-    p.Parent = SnakePage
-    Instance.new("UICorner", p).CornerRadius = UDim.new(1,0)
-    table.insert(snake, p)
-end
-
-task.spawn(function()
-    local t = 0
-    while true do
-        t += 0.08
-        for i, p in ipairs(snake) do
-            local wave = math.sin(t + i * 0.35) * 18
-            local wave2 = math.cos(t * 0.6 + i * 0.2) * 8
-            p.Position = UDim2.fromOffset(20 + i*10 + wave2, 120 + wave)
-        end
-        task.wait(0.02)
-    end
-end)
 
 -- ================= SOUND LOGIC (OPTIMIZED) =================
-local connected = {}
-
-local function normalize(id)
-    return tostring(id):match("%d+") or ""
-end
-
 local function hookSound(sound)
-    if connected[sound] then return end
+    if connected[sound] then
+        return
+    end
+
     connected[sound] = true
-            addLog("➕ DETECTED: " .. sound.Name, Color3.fromRGB(180,180,180))
+
+    local soundId = normalize(sound.SoundId)
+
+    addLog(
+        "➕ DETECTED: " .. sound.Name .. " | ID: " .. (soundId ~= "" and soundId or "None"),
+        Color3.fromRGB(180,180,180)
+    )
+
     sound.Played:Connect(function()
-        if not Enabled then return end
+        if not Enabled then
+            return
+        end
 
         local id = normalize(sound.SoundId)
+
+        addLog(
+            "🔊 PLAYED: " .. sound.Name .. " | ID: " .. (id ~= "" and id or "None"),
+            Color3.fromRGB(0,170,255)
+        )
 
         if id == TARGET_SOUND_ID then
             flash()
             status.Text = "TRIGGERED"
 
-            addLog("🔊 SOUND: " .. sound.Name .. " | " .. id, Color3.fromRGB(0,255,120))
+            addLog(
+                "🎯 TARGET HIT: " .. id,
+                Color3.fromRGB(0,255,120)
+            )
         end
     end)
 end
-
-for _, v in ipairs(game:GetDescendants()) do
-    if v:IsA("Sound") then
-        hookSound(v)
-    end
-end
-
-game.DescendantAdded:Connect(function(v)
-    if v:IsA("Sound") then
-        hookSound(v)
-    end
-end)
 
 -- ================= INSERT TOGGLE =================
 UIS.InputBegan:Connect(function(input, gp)
