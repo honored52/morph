@@ -197,6 +197,25 @@ toggle.MouseButton1Click:Connect(function()
     toggle.Text = Enabled and "Script: ON" or "Script: OFF"
 end)
 
+local espBtn = Instance.new("TextButton")
+espBtn.Size = UDim2.fromOffset(200, 40)
+espBtn.Position = UDim2.new(0, 10, 0, 110)
+espBtn.Text = "ESP: ON"
+espBtn.BackgroundColor3 = Color3.fromRGB(40,80,160)
+espBtn.TextColor3 = Color3.new(1,1,1)
+espBtn.Parent = MainPage
+
+Instance.new("UICorner", espBtn)
+
+espBtn.MouseButton1Click:Connect(function()
+    ESPEnabled = not ESPEnabled
+    espBtn.Text = ESPEnabled and "ESP: ON" or "ESP: OFF"
+
+    for char, data in pairs(ESPObjects) do
+        if data.hl then data.hl.Enabled = ESPEnabled end
+        if data.gui then data.gui.Enabled = ESPEnabled end
+    end
+end)
 
 -- ================= SOUND LOGIC (OPTIMIZED) =================
 local connected = {}
@@ -329,3 +348,147 @@ for name, theme in pairs(Themes) do
 
     y += 45
 end
+-- ================= ESP =================
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local ESPEnabled = true
+local ESPObjects = {}
+
+local function removeESP(char)
+    local data = ESPObjects[char]
+    if not data then return end
+
+    if data.hl then data.hl:Destroy() end
+    if data.gui then data.gui:Destroy() end
+
+    ESPObjects[char] = nil
+end
+
+local function createESP(char)
+    if not char then return end
+    if ESPObjects[char] then return end
+
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not hum or not root then return end
+
+    -- HIGHLIGHT
+    local hl = Instance.new("Highlight")
+    hl.Name = "ESP_HL"
+    hl.FillColor = Color3.fromRGB(0,170,255)
+    hl.OutlineColor = Color3.fromRGB(255,255,255)
+    hl.FillTransparency = 0.5
+    hl.Enabled = ESPEnabled
+    hl.Parent = char
+
+    -- LEFT HP BAR GUI
+    local gui = Instance.new("BillboardGui")
+    gui.Name = "HP_BAR"
+    gui.Size = UDim2.fromOffset(6, 50)
+    gui.AlwaysOnTop = true
+    gui.StudsOffset = Vector3.new(-2.5, 1, 0) -- 👈 СЛЕВА ОТ ПЕРСОНАЖА
+    gui.Parent = char
+
+    local bg = Instance.new("Frame")
+    bg.Size = UDim2.new(1,0,1,0)
+    bg.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    bg.BorderSizePixel = 0
+    bg.Parent = gui
+
+    local bar = Instance.new("Frame")
+    bar.Size = UDim2.new(1,0,1,0)
+    bar.BackgroundColor3 = Color3.fromRGB(0,255,0)
+    bar.BorderSizePixel = 0
+    bar.Parent = bg
+
+    ESPObjects[char] = {
+        hl = hl,
+        gui = gui,
+        bar = bar,
+        hum = hum
+    }
+end
+
+local function updateESP()
+    for char, data in pairs(ESPObjects) do
+        if not char or not char.Parent then
+            removeESP(char)
+            continue
+        end
+
+        local hum = data.hum
+        if hum then
+            local hp = math.clamp(hum.Health / hum.MaxHealth, 0, 1)
+
+            data.bar.Size = UDim2.new(1, 0, hp, 0)
+            data.bar.Position = UDim2.new(0, 0, 1 - hp, 0)
+
+            -- цвет по HP
+            if hp > 0.6 then
+                data.bar.BackgroundColor3 = Color3.fromRGB(0,255,0)
+            elseif hp > 0.3 then
+                data.bar.BackgroundColor3 = Color3.fromRGB(255,170,0)
+            else
+                data.bar.BackgroundColor3 = Color3.fromRGB(255,0,0)
+            end
+        end
+
+        data.hl.Enabled = ESPEnabled
+        data.gui.Enabled = ESPEnabled
+    end
+end
+
+task.spawn(function()
+    while true do
+        updateESP()
+        task.wait(0.1)
+    end
+end)
+
+local function updateESP()
+    for char, data in pairs(ESPObjects) do
+        if char and char.Parent and data.root and data.hum then
+            local dist = (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart"))
+                and (LocalPlayer.Character.HumanoidRootPart.Position - data.root.Position).Magnitude
+                or 0
+
+            data.text.Text = string.format(
+                "%s\nHP: %d\n%.0fm",
+                char.Name,
+                data.hum.Health,
+                dist
+            )
+
+            data.hl.Enabled = ESPEnabled
+            data.bb.Enabled = ESPEnabled
+        end
+    end
+end
+
+task.spawn(function()
+    while true do
+        updateESP()
+        task.wait(0.2)
+    end
+end)
+-- ================= PLAYER ESP HOOK =================
+
+local function hookPlayer(p)
+    if p == LocalPlayer then return end
+
+    p.CharacterAdded:Connect(function(c)
+        task.wait(0.5)
+        createESP(c)
+    end)
+
+    if p.Character then
+        createESP(p.Character)
+    end
+end
+
+for _, p in ipairs(Players:GetPlayers()) do
+    hookPlayer(p)
+end
+
+Players.PlayerAdded:Connect(hookPlayer)
