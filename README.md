@@ -1,7 +1,7 @@
-local TARGET_SOUND_ID = "96182964301191"
-local Enabled = true
+ local TARGET_SOUND_ID = "96182964301191"
+ local Enabled = true
 
-local UIS = game:GetService("UserInputService")
+ local UIS = game:GetService("UserInputService")
 
 -- ================= ROOT =================
 local ScreenGui = Instance.new("ScreenGui")
