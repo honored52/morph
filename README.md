@@ -114,7 +114,6 @@ end
 
 tab("Main", 10, MainPage)
 tab("Logs", 55, LogsPage)
-tab("Snake", 100, SnakePage)
 
 -- ================= INDICATOR =================
 local indicator = Instance.new("Frame")
@@ -200,6 +199,12 @@ end)
 
 
 -- ================= SOUND LOGIC (OPTIMIZED) =================
+local connected = {}
+
+local function normalize(id)
+    return tostring(id):match("%d+") or ""
+end
+
 local function hookSound(sound)
     if connected[sound] then
         return
@@ -237,6 +242,18 @@ local function hookSound(sound)
         end
     end)
 end
+
+for _, v in ipairs(game:GetDescendants()) do
+    if v:IsA("Sound") then
+        hookSound(v)
+    end
+end
+
+game.DescendantAdded:Connect(function(v)
+    if v:IsA("Sound") then
+        hookSound(v)
+    end
+end)
 
 -- ================= INSERT TOGGLE =================
 UIS.InputBegan:Connect(function(input, gp)
