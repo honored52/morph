@@ -1,21 +1,21 @@
- local TARGET_SOUND_ID = "96182964301191"
- local Enabled = true
+  local TARGET_SOUND_ID = "96182964301191"
+  local Enabled = true
 
- local UIS = game:GetService("UserInputService")
+  local UIS = game:GetService("UserInputService")
 
--- ================= ROOT =================
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "BetterSoundUI"
-ScreenGui.ResetOnSpawn = false
-pcall(function()
+ -- ================= ROOT =================
+ local ScreenGui = Instance.new("ScreenGui")
+ ScreenGui.Name = "BetterSoundUI"
+ ScreenGui.ResetOnSpawn = false
+ pcall(function()
     ScreenGui.Parent = game:GetService("CoreGui")
-end)
+ end)
 
--- ================= DRAG SYSTEM =================
-local dragging = false
-local dragInput, dragStart, startPos
+ -- ================= DRAG SYSTEM =================
+ local dragging = false
+ local dragInput, dragStart, startPos
 
-local function makeDraggable(frame)
+ local function makeDraggable(frame)
     frame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
