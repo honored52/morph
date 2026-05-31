@@ -51,29 +51,79 @@ end
 
 -- ================= MAIN WINDOW =================
 local Main = Instance.new("Frame")
-Main.Size = UDim2.fromOffset(450, 280)
 Main.Position = UDim2.new(0.5, -225, 0.5, -140)
-Main.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 Main.BorderSizePixel = 0
 Main.Parent = ScreenGui
+Main.Size = UDim2.fromOffset(560, 340)
+Main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 
+local Stroke = Instance.new("UIStroke")
+Stroke.Color = Color3.fromRGB(55,55,55)
+Stroke.Thickness = 1
+Stroke.Parent = Main
+
+local Gradient = Instance.new("UIGradient")
+Gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(22,22,22)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(16,16,16))
+}
+Gradient.Parent = Main
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
 
 makeDraggable(Main)
 
+-- ================= TOP BAR =================
+
+local TopBar = Instance.new("Frame")
+TopBar.Size = UDim2.new(1, 0, 0, 32)
+TopBar.BorderSizePixel = 0
+TopBar.Parent = Main
+TopBar.BackgroundColor3 = Color3.fromRGB(16,16,16)
+
+local TopStroke = Instance.new("UIStroke")
+TopStroke.Color = Color3.fromRGB(40,40,40)
+TopStroke.Parent = TopBar
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -70, 1, 0)
+Title.Position = UDim2.fromOffset(10, 0)
+Title.BackgroundTransparency = 1
+Title.TextColor3 = Color3.fromRGB(255,255,255)
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = TopBar
+Title.Text = "CLC HUB"
+Title.TextSize = 18
+Title.Font = Enum.Font.GothamBlack
+
+local Version = Instance.new("TextLabel")
+Version.Size = UDim2.fromOffset(60, 32)
+Version.Position = UDim2.new(1, -65, 0, 0)
+Version.BackgroundTransparency = 1
+Version.Text = "TEST"
+Version.TextColor3 = Color3.fromRGB(0,170,255)
+Version.TextXAlignment = Enum.TextXAlignment.Right
+Version.Font = Enum.Font.GothamBold
+Version.TextSize = 15
+Version.Parent = TopBar
+
 -- ================= SIDEBAR =================
 local Side = Instance.new("Frame")
-Side.Size = UDim2.fromOffset(110, 280)
-Side.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+Side.Position = UDim2.fromOffset(0, 32) -- под TopBar
+Side.Size = UDim2.new(0, 110, 1, -32)
 Side.BorderSizePixel = 0
 Side.Parent = Main
+Side.BackgroundColor3 = Color3.fromRGB(15,15,15)
+
+local SideStroke = Instance.new("UIStroke")
+SideStroke.Color = Color3.fromRGB(35,35,35)
+SideStroke.Parent = Side
 
 Instance.new("UICorner", Side).CornerRadius = UDim.new(0, 10)
 
 -- ================= PAGES =================
 local Pages = Instance.new("Frame")
-Pages.Size = UDim2.new(1, -120, 1, -20)
-Pages.Position = UDim2.fromOffset(120, 10)
+Pages.Size = UDim2.new(1, -120, 1, -50)
+Pages.Position = UDim2.fromOffset(120, 40)
 Pages.BackgroundTransparency = 1
 Pages.Parent = Main
 
@@ -99,10 +149,22 @@ local function tab(text, y, page)
     b.Size = UDim2.fromOffset(100, 35)
     b.Position = UDim2.fromOffset(5, y)
     b.Text = text
-    b.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    b.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    b.AutoButtonColor = false
     b.TextColor3 = Color3.new(1,1,1)
     b.Parent = Side
     Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(40,40,40)
+stroke.Parent = b
+
+b.MouseEnter:Connect(function()
+    b.BackgroundColor3 = Color3.fromRGB(35,35,35)
+end)
+
+b.MouseLeave:Connect(function()
+    b.BackgroundColor3 = Color3.fromRGB(25,25,25)
+end)
 
     b.MouseButton1Click:Connect(function()
         for _, p in pairs(Pages:GetChildren()) do
@@ -139,6 +201,15 @@ logList.CanvasSize = UDim2.new(0,0,0,0)
 logList.ScrollBarThickness = 6
 logList.BackgroundTransparency = 1
 logList.Parent = LogsPage
+
+logList.BackgroundColor3 = Color3.fromRGB(18,18,18)
+
+local logCorner = Instance.new("UICorner")
+logCorner.Parent = logList
+
+local logStroke = Instance.new("UIStroke")
+logStroke.Color = Color3.fromRGB(40,40,40)
+logStroke.Parent = logList
 
 local layout = Instance.new("UIListLayout")
 layout.Parent = logList
@@ -352,7 +423,7 @@ end
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-local ESPEnabled = true
+local ESPEnabled = false
 local ESPObjects = {}
 
 local function removeESP(char)
@@ -479,10 +550,12 @@ local function hookPlayer(p)
 
     p.CharacterAdded:Connect(function(c)
         task.wait(0.5)
-        createESP(c)
+        if ESPEnabled then
+            createESP(c)
+        end
     end)
 
-    if p.Character then
+    if p.Character and ESPEnabled then
         createESP(p.Character)
     end
 end
