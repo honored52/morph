@@ -89,7 +89,7 @@ end
 
 local MainPage = newPage("Main")
 local LogsPage = newPage("Logs")
-local SnakePage = newPage("Snake")
+local ThemesPage = newPage("Themes")
 
 MainPage.Visible = true
 
@@ -114,7 +114,7 @@ end
 
 tab("Main", 10, MainPage)
 tab("Logs", 55, LogsPage)
-
+tab("Themes", 100, ThemesPage)
 -- ================= INDICATOR =================
 local indicator = Instance.new("Frame")
 indicator.Size = UDim2.fromOffset(12, 12)
@@ -262,3 +262,70 @@ UIS.InputBegan:Connect(function(input, gp)
         Main.Visible = not Main.Visible
     end
 end)
+-- ================= THEMES =================
+local Themes = {
+    Dark = {
+        Main = Color3.fromRGB(18,18,18),
+        Side = Color3.fromRGB(28,28,28),
+        Button = Color3.fromRGB(45,45,45),
+        Text = Color3.fromRGB(255,255,255)
+    },
+
+    Light = {
+        Main = Color3.fromRGB(235,235,235),
+        Side = Color3.fromRGB(215,215,215),
+        Button = Color3.fromRGB(190,190,190),
+        Text = Color3.fromRGB(0,0,0)
+    },
+
+    Green = {
+        Main = Color3.fromRGB(15,30,15),
+        Side = Color3.fromRGB(25,50,25),
+        Button = Color3.fromRGB(45,90,45),
+        Text = Color3.fromRGB(220,255,220)
+    },
+
+    Purple = {
+        Main = Color3.fromRGB(30,20,40),
+        Side = Color3.fromRGB(50,30,70),
+        Button = Color3.fromRGB(90,50,140),
+        Text = Color3.fromRGB(255,255,255)
+    }
+}
+
+local function ApplyTheme(theme)
+    Main.BackgroundColor3 = theme.Main
+    Side.BackgroundColor3 = theme.Side
+
+    for _, v in ipairs(ScreenGui:GetDescendants()) do
+        if v:IsA("TextLabel") then
+            v.TextColor3 = theme.Text
+
+        elseif v:IsA("TextButton") then
+            v.BackgroundColor3 = theme.Button
+            v.TextColor3 = theme.Text
+        end
+    end
+end
+local y = 10
+
+for name, theme in pairs(Themes) do
+    local btn = Instance.new("TextButton")
+
+    btn.Size = UDim2.fromOffset(180, 35)
+    btn.Position = UDim2.fromOffset(10, y)
+
+    btn.Text = name
+    btn.Parent = ThemesPage
+
+    btn.BackgroundColor3 = theme.Button
+    btn.TextColor3 = theme.Text
+
+    Instance.new("UICorner", btn)
+
+    btn.MouseButton1Click:Connect(function()
+        ApplyTheme(theme)
+    end)
+
+    y += 45
+end
